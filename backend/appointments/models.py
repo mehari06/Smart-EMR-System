@@ -16,9 +16,9 @@ class Appointment(models.Model):
         (STATUS_NO_SHOW,    'No Show'),
     ]
 
-    patient      = models.ForeignKey('patients.Patient', on_delete=models.PROTECT)
-    doctor       = models.ForeignKey('core.Staff', on_delete=models.PROTECT, related_name='appointments_as_doctor')
-    department   = models.ForeignKey('core.Department', on_delete=models.PROTECT)
+    patient      = models.ForeignKey('patients.Patient', on_delete=models.PROTECT, null=True, blank=True)
+    doctor       = models.ForeignKey('core.Staff', on_delete=models.PROTECT, related_name='appointments_as_doctor', null=True, blank=True)
+    department   = models.ForeignKey('core.Department', on_delete=models.PROTECT, null=True, blank=True)
     scheduled_at = models.DateTimeField()
     reason       = models.CharField(max_length=255)
     status       = models.CharField(max_length=1, choices=STATUS_CHOICES, default=STATUS_SCHEDULED)
