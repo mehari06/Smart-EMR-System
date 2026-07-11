@@ -32,7 +32,7 @@ urlpatterns = [
     # API Endpoints
     path('api/patients/', include('patients.urls')),
     # path('api/appointments/', include('appointments.urls')),
-    # path('api/clinical/', include('clinical.urls')),
+    path('api/clinical/', include('clinical.urls')),
     # path('api/prescriptions/', include('prescriptions.urls')),
     # path('api/laboratory/', include('laboratory.urls')),
     # path('api/notifications/', include('notifications.urls'))
