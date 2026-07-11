@@ -29,8 +29,8 @@ urlpatterns = [
     # Core app routing (Auth, Users, Organizations, Departments)
     path('api/core/', include('core.urls')),
 
-    # API Endpoints - Add as we create them
-    # path('api/patients/', include('patients.urls')),
+    # API Endpoints
+    path('api/patients/', include('patients.urls')),
     # path('api/appointments/', include('appointments.urls')),
     # path('api/clinical/', include('clinical.urls')),
     # path('api/prescriptions/', include('prescriptions.urls')),
