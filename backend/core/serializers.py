@@ -57,6 +57,14 @@ class StaffSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ChangePasswordSerializer(serializers.Serializer):
+    """
+    Serializer for password change endpoint.
+    """
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+
+
 class StaffCreateUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer used specifically for creating or updating a Staff member.
