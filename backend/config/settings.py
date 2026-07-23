@@ -119,7 +119,9 @@ DATABASES = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
+      # Every endpoint requires login by default (security-first)
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
@@ -151,6 +153,18 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 
 # Password validation
@@ -200,5 +214,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # =============================================
 # CUSTOM USER MODEL
+#tells Django: "use our custom User, not the default one.
 # =============================================
 AUTH_USER_MODEL = 'core.User'
