@@ -34,7 +34,7 @@ class Patient(models.Model):
     # ── Profile link to custom User ─────────────────────────
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='patient_profile',
     )
 
@@ -57,7 +57,7 @@ class Patient(models.Model):
     class Meta:
         ordering = ['patient_number']
 
-
+#PATAIENT INTAKE
 class Allergy(models.Model):
     name        = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
