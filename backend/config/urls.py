@@ -29,12 +29,15 @@ urlpatterns = [
     # Core app routing (Auth, Users, Organizations, Departments)
     path('api/core/', include('core.urls')),
 
+    # JWT token refresh — required by frontend axios interceptor
+    path('api/core/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
     # API Endpoints
     path('api/patients/', include('patients.urls')),
-    # path('api/appointments/', include('appointments.urls')),
+    path('api/appointments/', include('appointments.urls')),
     path('api/clinical/', include('clinical.urls')),
-    # path('api/prescriptions/', include('prescriptions.urls')),
-    # path('api/laboratory/', include('laboratory.urls')),
+    path('api/prescriptions/', include('prescriptions.urls')),
+    path('api/laboratory/', include('laboratory.urls')),
     # path('api/notifications/', include('notifications.urls'))
 ]
 if settings.DEBUG:
