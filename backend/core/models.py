@@ -173,6 +173,7 @@ class Staff(models.Model):
     )
     specialization = models.CharField(max_length=100, blank=True)
     license_number = models.CharField(max_length=50, blank=True)
+    profile_photo  = models.ImageField(upload_to='staff_photos/', blank=True, null=True)
     is_active      = models.BooleanField(default=True)
     joined_at      = models.DateTimeField(auto_now_add=True)
 
