@@ -63,7 +63,7 @@ class PatientAdmin(admin.ModelAdmin):
     # ── Fieldsets ──────────────────────────────────────────
     fieldsets = (
         ("Patient Identity", {
-            "fields": ("patient_number", "registered_at", "updated_at", "is_active"),
+            "fields": ("user","patient_number", "registered_at", "updated_at", "is_active"),
         }),
         ("Personal Information", {
             "fields": (
