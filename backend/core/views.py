@@ -12,7 +12,8 @@ from .serializers import (
     StaffSerializer,
     StaffCreateUpdateSerializer,
     CustomTokenObtainPairSerializer,
-    UserSerializer
+    UserSerializer,
+    ChangePasswordSerializer
 )
 from .permissions import IsAdministrator
 
@@ -44,6 +45,45 @@ class CurrentUserView(APIView):
             data['is_patient'] = True
 
         return Response(data)
+
+    def patch(self, request):
+        user = request.user
+        
+        # Extract fields meant for the User model (like phone)
+        phone = request.data.get('phone')
+        if phone:
+            user.phone = phone
+            user.save(update_fields=['phone'])
+            
+        # Extract fields meant for the profile (like profile_photo)
+        profile_photo = request.FILES.get('profile_photo')
+        if profile_photo:
+            if hasattr(user, 'staff_profile'):
+                user.staff_profile.profile_photo = profile_photo
+                user.staff_profile.save(update_fields=['profile_photo'])
+            elif hasattr(user, 'patient_profile'):
+                user.patient_profile.profile_photo = profile_photo
+                user.patient_profile.save(update_fields=['profile_photo'])
+                
+        return self.get(request)
+
+class ChangePasswordView(APIView):
+    """
+    Endpoint for users to change their own password.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = request.user
+        if not user.check_password(serializer.validated_data['old_password']):
+            return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        return Response({"detail": "Password successfully updated."}, status=status.HTTP_200_OK)
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
