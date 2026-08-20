@@ -17,26 +17,36 @@ from .selectors import email_already_registered, patient_number_exists
 
 User = get_user_model()
 
-
 def _generate_patient_number() -> str:
     """
     Generates a unique patient number in the format: PAT-000001.
-    Finds the last created patient and increments by 1.
-    Thread-safe because we rely on the DB's unique constraint as the
-    final guard and use select_for_update or auto-increment logic.
+    Uses select_for_update to prevent race conditions.
     """
-    last_patient = Patient.objects.order_by("-id").first()
-    if last_patient:
-        # Extract the numeric portion and increment
-        try:
-            last_number = int(last_patient.patient_number.split("-")[-1])
-        except (ValueError, IndexError):
-            last_number = 0
-        next_number = last_number + 1
-    else:
-        next_number = 1
+    from django.db import transaction
+    
+    with transaction.atomic():
+        last_patient = (
+            Patient.objects
+            .select_for_update()
+            .order_by("-id")
+            .first()
+        )
+        
+        if last_patient:
+            try:
+                last_number = int(last_patient.patient_number.split("-")[-1])
+            except (ValueError, IndexError):
+                last_number = 0
+            next_number = last_number + 1
+        else:
+            next_number = 1
 
-    return f"{PATIENT_NUMBER_PREFIX}-{str(next_number).zfill(PATIENT_NUMBER_PADDING)}"
+        # Safety check: ensure the generated number doesn't already exist
+        while True:
+            candidate = f"{PATIENT_NUMBER_PREFIX}-{str(next_number).zfill(PATIENT_NUMBER_PADDING)}"
+            if not Patient.objects.filter(patient_number=candidate).exists():
+                return candidate
+            next_number += 1
 
 
 @transaction.atomic
@@ -92,7 +102,7 @@ def update_patient(*, patient: Patient, data: dict[str, Any]) -> Patient:
     Updates a patient's profile data.
     Also updates first/last name on the linked User if provided.
     """
-    user_fields = ["first_name", "last_name", "phone"]
+    user_fields = ["first_name", "last_name"]
     user_updated = False
 
     for field in user_fields:
@@ -101,15 +111,14 @@ def update_patient(*, patient: Patient, data: dict[str, Any]) -> Patient:
             user_updated = True
 
     if user_updated:
-        patient.user.save(update_fields=["first_name", "last_name", "phone"])
+        patient.user.save(update_fields=["first_name", "last_name"])
 
-    # Update patient-specific fields
+    # Update patient-specific fields (including phone)
     for field, value in data.items():
         setattr(patient, field, value)
 
     patient.save()
     return patient
-
 
 @transaction.atomic
 def deactivate_patient(*, patient: Patient) -> Patient:

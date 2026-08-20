@@ -33,9 +33,9 @@ class PatientAllergySerializer(serializers.ModelSerializer):
     class Meta:
         model  = PatientAllergy
         fields = [
-            "id", "allergy", "allergy_name",
+            "id", "allergy", "allergy_name", "patient",
             "severity", "severity_display",
-            "reaction", "recorded_at",
+            "reaction", "notes", "recorded_at",
         ]
         read_only_fields = ["id", "recorded_at"]
 
@@ -98,7 +98,7 @@ class PatientDetailSerializer(serializers.ModelSerializer):
     gender_display      = serializers.CharField(source="get_gender_display", read_only=True)
     blood_group_display = serializers.CharField(source="get_blood_group_display", read_only=True)
     allergies           = PatientAllergySerializer(
-        source="patientallergy_set", many=True, read_only=True
+        source="allergies_set", many=True, read_only=True
     )
 
     class Meta:

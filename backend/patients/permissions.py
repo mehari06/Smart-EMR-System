@@ -7,38 +7,94 @@ DRF permission classes specific to the patients module.
 from rest_framework import permissions
 
 
-class CanManagePatients(permissions.BasePermission):
+PATIENT_STAFF_ROLES = ('admin', 'staff_head', 'doctor', 'nurse', 'receptionist')
+PATIENT_CREATE_ROLES = ('admin', 'staff_head', 'doctor', 'nurse', 'receptionist')
+
+
+class CanCreatePatient(permissions.BasePermission):
+    """Allows staff roles that register patients to create patient records."""
+
+    def has_permission(self, request, view) -> bool:
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and getattr(request.user, 'role', '') in PATIENT_CREATE_ROLES
+        )
+
+
+class CanAccessPatient(permissions.BasePermission):
     """
-    Allows access to:
-    - Administrators (full CRUD)
-    - Doctors and Nurses (read + update, no delete)
+    Allows staff to access patient records according to queryset scoping.
+    Allows patients to view/update only their own profile.
     """
 
     def has_permission(self, request, view) -> bool:
         if not request.user or not request.user.is_authenticated:
             return False
-
-        allowed_roles = ("admin", "doctor", "nurse")
-        return request.user.role in allowed_roles
+        return getattr(request.user, 'role', '') in (*PATIENT_STAFF_ROLES, 'patient')
 
     def has_object_permission(self, request, view, obj) -> bool:
-        # Admin can do anything
-        if request.user.is_admin_role:
+        role = getattr(request.user, 'role', '')
+
+        if role in ('admin', 'staff_head'):
             return True
 
-        # Doctors and Nurses can read and update, but not delete
-        if request.user.role in ("doctor", "nurse"):
-            return request.method in permissions.SAFE_METHODS or request.method in ("PUT", "PATCH")
+        if role in ('doctor', 'nurse', 'receptionist'):
+            return request.method in permissions.SAFE_METHODS or request.method in ('PUT', 'PATCH')
+
+        if role == 'patient':
+            return obj.user_id == request.user.id and (
+                request.method in permissions.SAFE_METHODS or request.method in ('PUT', 'PATCH')
+            )
 
         return False
 
 
-class IsPatientOwner(permissions.BasePermission):
-    """
-    Allows a patient to view and update only their own profile.
-    """
+
+
+def can_access_patient_allergy_patient(user, patient, *, write=False) -> bool:
+    if not user or not user.is_authenticated or patient is None:
+        return False
+
+    role = getattr(user, 'role', '')
+    if user.is_superuser or role in ('admin', 'staff_head', 'nurse'):
+        return True
+
+    if role == 'patient':
+        return not write and patient.user_id == user.id
+
+    if role == 'doctor':
+        staff = getattr(user, 'staff_profile', None)
+        if not staff:
+            return False
+        return (
+            patient.appointment_set.filter(doctor=staff).exists() or
+            patient.encounter_set.filter(doctor=staff).exists()
+        )
+
+    return False
+
+
+class CanAccessPatientAllergy(permissions.BasePermission):
+    """Role-aware access to patient-specific allergy records."""
+
+    def has_permission(self, request, view) -> bool:
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        role = getattr(request.user, 'role', '')
+        if request.method in permissions.SAFE_METHODS:
+            return role in ('admin', 'staff_head', 'nurse', 'doctor', 'patient')
+
+        return role in ('admin', 'staff_head', 'nurse', 'doctor')
 
     def has_object_permission(self, request, view, obj) -> bool:
-        if request.user.is_admin_role:
-            return True
-        return obj.user == request.user
+        return can_access_patient_allergy_patient(
+            request.user,
+            obj.patient,
+            write=request.method not in permissions.SAFE_METHODS,
+        )
+
+# Backward-compatible aliases for older imports.
+CanManagePatients = CanAccessPatient
+IsPatientOwner = CanAccessPatient

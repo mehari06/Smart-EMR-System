@@ -15,14 +15,16 @@ from .models import Patient
 
 
 def get_patient_queryset() -> QuerySet:
-    """
-    Base optimized queryset for Patient.
-    Uses select_related to avoid N+1 queries when accessing user data.
-    """
     return (
         Patient.objects
         .select_related("user")
-        .prefetch_related("patientallergy_set__allergy")
+        .prefetch_related("allergies_set__allergy")
+        .only(
+            'id', 'patient_number', 'date_of_birth', 'gender',
+            'blood_group', 'phone', 'address', 'is_active',
+            'registered_at', 'updated_at',
+            'user__id', 'user__email', 'user__first_name', 'user__last_name',
+        )
     )
 
 

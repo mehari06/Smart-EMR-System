@@ -1,7 +1,6 @@
 """
 Patient Management Module — Django Admin
-
-Professional admin configuration for Patient, Allergy,
+admin configuration for Patient, Allergy,
 and PatientAllergy models with image preview, fieldsets,
 inline models, and optimized queries.
 """
@@ -10,15 +9,16 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import Patient, Allergy, PatientAllergy
+from .services import _generate_patient_number
 
 
 # ── Inline: Allergies inside Patient ────────────────────────────
 
 class PatientAllergyInline(admin.TabularInline):
-    model       = PatientAllergy
-    extra       = 0
+    model = PatientAllergy
+    extra = 0
     readonly_fields = ["recorded_at"]
-    fields      = ["allergy", "severity", "reaction", "recorded_at"]
+    fields = ["allergy", "severity", "reaction", "recorded_at"]
     autocomplete_fields = ["allergy"]
 
 
@@ -38,32 +38,39 @@ class PatientAdmin(admin.ModelAdmin):
         "registered_at",
         "photo_preview",
     ]
-    list_filter       = ["gender", "blood_group", "is_active", "registered_at"]
-    search_fields     = [
+    list_filter = ["gender", "blood_group", "is_active", "registered_at"]
+    search_fields = [
         "patient_number",
         "user__first_name",
         "user__last_name",
         "user__email",
         "phone",
     ]
-    ordering          = ["-registered_at"]
-    readonly_fields   = ["patient_number", "registered_at", "updated_at", "photo_preview"]
-    inlines           = [PatientAllergyInline]
-    date_hierarchy    = "registered_at"
-    list_per_page     = 25
+    ordering = ["-registered_at"]
+    readonly_fields = ["patient_number",
+                       "registered_at", "updated_at", "photo_preview"]
+    inlines = [PatientAllergyInline]
+    date_hierarchy = "registered_at"
+    list_per_page = 25
 
     # ── Optimized queryset ─────────────────────────────────
     def get_queryset(self, request):
         return (
             super().get_queryset(request)
             .select_related("user")
-            .prefetch_related("patientallergy_set__allergy")
+            .prefetch_related("allergies_set__allergy")
         )
+
+    # ── Auto-generate patient_number if blank ──────────────
+    def save_model(self, request, obj, form, change):
+        if not obj.patient_number:
+            obj.patient_number = _generate_patient_number()
+        super().save_model(request, obj, form, change)
 
     # ── Fieldsets ──────────────────────────────────────────
     fieldsets = (
         ("Patient Identity", {
-            "fields": ("user","patient_number", "registered_at", "updated_at", "is_active"),
+            "fields": ("user", "patient_number", "registered_at", "updated_at", "is_active"),
         }),
         ("Personal Information", {
             "fields": (
@@ -106,24 +113,25 @@ class PatientAdmin(admin.ModelAdmin):
 
 @admin.register(Allergy)
 class AllergyAdmin(admin.ModelAdmin):
-    list_display  = ["name", "description"]
+    list_display = ["name", "description"]
     search_fields = ["name"]
-    ordering      = ["name"]
+    ordering = ["name"]
 
 
 # ── PatientAllergy Admin ─────────────────────────────────────────
 
 @admin.register(PatientAllergy)
 class PatientAllergyAdmin(admin.ModelAdmin):
-    list_display  = ["patient", "allergy", "severity", "reaction", "recorded_at"]
-    list_filter   = ["severity", "allergy"]
+    list_display = ["patient", "allergy",
+                    "severity", "reaction", "recorded_at"]
+    list_filter = ["severity", "allergy"]
     search_fields = [
         "patient__patient_number",
         "patient__user__first_name",
         "patient__user__last_name",
         "allergy__name",
     ]
-    ordering      = ["-recorded_at"]
+    ordering = ["-recorded_at"]
     readonly_fields = ["recorded_at"]
     autocomplete_fields = ["allergy", "patient"]
 
