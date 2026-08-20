@@ -9,13 +9,22 @@ from .models import Appointment
 
 
 def get_all_appointments() -> QuerySet:
-    """Returns all appointments with optimized joins."""
     return (
         Appointment.objects
-        .select_related('patient__user', 'doctor__user', 'department')
+        .select_related('patient__user', 'doctor__user', 'department', 'triage_nurse__user')
+        .only(
+            'id', 'patient', 'doctor', 'department', 'triage_nurse',
+            'scheduled_at', 'reason', 'status', 'created_at',
+            'triage_level', 'chief_complaint', 'triaged_at',
+            'patient__user__first_name', 'patient__user__last_name',
+            'patient__patient_number', 'patient__phone',
+            'doctor__user__first_name', 'doctor__user__last_name',
+            'doctor__specialization',
+            'department__name',
+            'triage_nurse__user__first_name', 'triage_nurse__user__last_name',
+        )
         .order_by('scheduled_at')
     )
-
 
 def get_appointments_for_patient(*, patient_id: int) -> QuerySet:
     """Returns all appointments for a specific patient."""

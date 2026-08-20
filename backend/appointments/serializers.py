@@ -36,14 +36,17 @@ class PatientBriefSerializer(serializers.ModelSerializer):
 class AppointmentListSerializer(serializers.ModelSerializer):
     patient = PatientBriefSerializer(read_only=True)
     doctor = DoctorBriefSerializer(read_only=True)
+    triage_nurse = DoctorBriefSerializer(read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    triage_level_display = serializers.CharField(source='get_triage_level_display', read_only=True)
 
     class Meta:
         model = Appointment
         fields = [
-            'id', 'patient', 'doctor', 'department',
+            'id', 'patient', 'doctor', 'triage_nurse', 'department',
             'scheduled_at', 'reason', 'status', 'status_display',
-            'created_at',
+            'triage_level', 'triage_level_display', 'chief_complaint',
+            'triaged_at', 'created_at',
         ]
 
 
@@ -52,14 +55,19 @@ class AppointmentListSerializer(serializers.ModelSerializer):
 class AppointmentDetailSerializer(serializers.ModelSerializer):
     patient = PatientBriefSerializer(read_only=True)
     doctor = DoctorBriefSerializer(read_only=True)
+    triage_nurse = DoctorBriefSerializer(read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    triage_level_display = serializers.CharField(source='get_triage_level_display', read_only=True)
 
     class Meta:
         model = Appointment
         fields = [
-            'id', 'patient', 'doctor', 'department',
+            'id', 'patient', 'doctor', 'triage_nurse', 'department',
             'scheduled_at', 'reason', 'status', 'status_display',
-            'notes', 'created_at',
+            'triage_level', 'triage_level_display', 'chief_complaint',
+            'triage_notes', 'triaged_at', 'pain_score', 'temperature',
+            'heart_rate', 'systolic_bp', 'diastolic_bp',
+            'oxygen_saturation', 'respiratory_rate', 'notes', 'created_at',
         ]
 
 
@@ -69,11 +77,17 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
     """
     Used by staff to schedule a new appointment.
     Validates that the scheduled time is in the future.
+    Doctor is optional - can be assigned later during triage.
     """
 
     class Meta:
         model = Appointment
-        fields = ['patient', 'doctor', 'department', 'scheduled_at', 'reason', 'notes']
+        fields = ['patient', 'doctor', 'department', 'triage_nurse', 'scheduled_at', 'reason', 'notes']
+        extra_kwargs = {
+            'doctor': {'required': False},
+            'department': {'required': False},
+            'triage_nurse': {'required': False},
+        }
 
     def validate_scheduled_at(self, value):
         if value <= timezone.now():
@@ -124,3 +138,22 @@ class AssignDoctorSerializer(serializers.Serializer):
 class AppointmentCheckInSerializer(serializers.Serializer):
     """Marks the patient as checked-in. No extra fields needed."""
     pass
+# ── Triage Serializer (POST /appointments/{id}/triage/) ────────────
+
+class AppointmentTriageSerializer(serializers.Serializer):
+    """Nurse triage: complaint, vitals, and doctor assignment."""
+    chief_complaint = serializers.CharField(max_length=255)
+    triage_level = serializers.ChoiceField(
+        choices=[(1, 1), (2, 2), (3, 3), (4, 4), (5, 5)]
+    )
+    triage_notes = serializers.CharField(required=False, allow_blank=True)
+    doctor_id = serializers.IntegerField()
+    
+    # Vitals
+    pain_score = serializers.IntegerField(min_value=0, max_value=10, required=False)
+    temperature = serializers.DecimalField(max_digits=4, decimal_places=1, required=False)
+    heart_rate = serializers.IntegerField(required=False)
+    systolic_bp = serializers.IntegerField(required=False)
+    diastolic_bp = serializers.IntegerField(required=False)
+    oxygen_saturation = serializers.IntegerField(required=False)
+    respiratory_rate = serializers.IntegerField(required=False)
