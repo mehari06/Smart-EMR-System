@@ -1,6 +1,8 @@
 from django.db import models
 
 # Create your models here.
+
+
 class Medicine(models.Model):
     name = models.CharField(max_length=255)
     strength = models.CharField(max_length=100)
@@ -26,7 +28,8 @@ class Prescription(models.Model):
     ]
 
     encounter = models.ForeignKey(
-        'clinical.Encounter', on_delete=models.CASCADE)
+        'clinical.Encounter', on_delete=models.CASCADE,
+        related_name='prescriptions')
     prescribed_by = models.ForeignKey('core.Staff', on_delete=models.PROTECT)
     status = models.CharField(
         max_length=1, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
@@ -42,6 +45,11 @@ class Prescription(models.Model):
             ('can_prescribe', 'Can create prescriptions for patients'),
             ('can_dispense',  'Can dispense/update prescription status'),
         ]
+        indexes = [
+            models.Index(fields=['encounter']),
+            models.Index(fields=['status']),
+            models.Index(fields=['prescribed_by', 'prescribed_at']),
+        ]
 
 
 class PrescriptionItem(models.Model):
@@ -55,3 +63,8 @@ class PrescriptionItem(models.Model):
 
     def __str__(self) -> str:
         return f"{self.medicine} - {self.dosage}"
+    class Meta:
+        indexes = [
+            models.Index(fields=['prescription']),
+            models.Index(fields=['medicine']),
+        ]
