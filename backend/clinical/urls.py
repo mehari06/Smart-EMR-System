@@ -10,14 +10,18 @@ from .views import (
     MedicalHistoryViewSet,
     EncounterViewSet,
     VitalSignViewSet,
-    DiagnosisViewSet
+    DiagnosisViewSet,
+    RadiologyTestViewSet,
+    RadiologyOrderViewSet,
 )
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 router.register(r'history', MedicalHistoryViewSet, basename='medical-history')
 router.register(r'encounters', EncounterViewSet, basename='encounter')
 router.register(r'vitals', VitalSignViewSet, basename='vital-sign')
 router.register(r'diagnoses', DiagnosisViewSet, basename='diagnosis')
+router.register(r'radiology/tests', RadiologyTestViewSet, basename='radiology-test')
+router.register(r'radiology/orders', RadiologyOrderViewSet, basename='radiology-order')
 
 urlpatterns = [
     path('', include(router.urls)),
