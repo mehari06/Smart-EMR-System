@@ -56,7 +56,10 @@ class User(AbstractUser):
     ROLE_NURSE       = 'nurse'
     ROLE_PHARMACIST  = 'pharmacist'
     ROLE_LAB_TECH    = 'lab_tech'
+    ROLE_RECEPTIONIST = 'receptionist'
+    ROLE_STAFF_HEAD  = 'staff_head'
     ROLE_PATIENT     = 'patient'
+
 
     ROLE_CHOICES = [
         (ROLE_ADMIN,      'Administrator'),
@@ -64,6 +67,8 @@ class User(AbstractUser):
         (ROLE_NURSE,      'Nurse'),
         (ROLE_PHARMACIST, 'Pharmacist'),
         (ROLE_LAB_TECH,   'Lab Technician'),
+        (ROLE_RECEPTIONIST, 'Receptionist'),
+        (ROLE_STAFF_HEAD, 'Staff Head'),
         (ROLE_PATIENT,    'Patient'),
     ]
 
@@ -102,6 +107,10 @@ class User(AbstractUser):
     @property
     def is_lab_tech(self):
         return self.role == self.ROLE_LAB_TECH
+
+    @property
+    def is_staff_head(self):
+        return self.role == self.ROLE_STAFF_HEAD
 
     @property
     def is_patient_role(self):

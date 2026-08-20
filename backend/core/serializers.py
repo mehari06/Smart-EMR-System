@@ -26,11 +26,31 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         return token
 
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        # Add user data to the response payload so frontend can store it
+        user_data = UserSerializer(self.user).data
+        data['user'] = user_data
+        
+        return data
+
 
 class UserSerializer(serializers.ModelSerializer):
+    staff_profile_id = serializers.SerializerMethodField()
+    staff_id = serializers.SerializerMethodField()
+
+    def get_staff_profile_id(self, obj):
+        staff_profile = getattr(obj, 'staff_profile', None)
+        return staff_profile.id if staff_profile else None
+
+    def get_staff_id(self, obj):
+        staff_profile = getattr(obj, 'staff_profile', None)
+        return staff_profile.staff_id if staff_profile else None
+
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'phone', 'is_active']
+        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'phone', 'is_active', 'staff_profile_id', 'staff_id']
         read_only_fields = ['id', 'role']
 
 

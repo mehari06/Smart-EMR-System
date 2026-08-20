@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-c$h@va43p^7%npl(6jfwu8fgujkadr#cb3_7jey#ihi30w&!x3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
 
 # Application definition
@@ -57,6 +57,10 @@ INSTALLED_APPS = [
     'prescriptions',     # Prescription management
     'laboratory',        # Lab orders and results
     'notifications',     # Email, SMS notifications
+    'audit',
+    'reports',
+    'attachments',
+    'queue_management',
 ]
 
 MIDDLEWARE = [
@@ -75,7 +79,15 @@ INTERNAL_IPS = [
     'localhost',
 ]
 
+# DRF routers are all registered with trailing_slash=False.
+# Without this, Django's CommonMiddleware will attempt a 301 redirect on
+# POST requests that lack a trailing slash, which raises a RuntimeError
+# because it cannot redirect POST bodies. Setting this to False disables
+# that behavior, which is correct for this API's URL architecture.
+APPEND_SLASH = False
+
 ROOT_URLCONF = 'config.urls'
+
 
 TEMPLATES = [
     {
@@ -105,7 +117,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'emr_db'),
+        'NAME': os.getenv('DB_NAME', 'SmartEMR'),
         'USER': os.getenv('DB_USER', 'postgres'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
@@ -121,7 +133,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
-      # Every endpoint requires login by default (security-first)
+    # Every endpoint requires login by default (security-first)
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
@@ -201,8 +213,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = []
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -214,6 +227,43 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # =============================================
 # CUSTOM USER MODEL
-#tells Django: "use our custom User, not the default one.
+# tells Django: "use our custom User, not the default one.
 # =============================================
 AUTH_USER_MODEL = 'core.User'
+# # Change Django Admin Site Header
+# ADMIN_SITE_HEADER = "SmartEMR Administration"
+# ADMIN_SITE_TITLE = "SmartEMR"
+# =============================================
+# EMAIL SETTINGS (RESEND)
+# =============================================
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
+RESEND_FROM_EMAIL = os.getenv(
+    'RESEND_FROM_EMAIL', 'Smart EMR <notifications@smartemr.com>')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+
+# =============================================
+# CELERY SETTINGS
+# =============================================
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+# =============================================
+# DJANGO CACHE (REDIS)
+# Database 0 = Celery Broker
+# Database 1 = Django Cache
+# =============================================
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://localhost:6379/1',  # Database 1 for cache
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+        },
+        'KEY_PREFIX': 'smartemr',
+        'TIMEOUT': 300,  # 5 minutes default
+    }
+}
