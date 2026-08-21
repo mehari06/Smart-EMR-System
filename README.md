@@ -97,7 +97,7 @@ The Django backend strictly adheres to the **Service Layer Pattern**:
 - **👥 Patient Management:** Complete demographic tracking, allergies, and medical history.
 - **📅 Appointment & Queue Management:** Scheduling, Check-ins, and an ESI (Emergency Severity Index) based real-time priority queue.
 - **🩺 Clinical Encounters:** Comprehensive SOAP notes, ICD-10 Diagnosis tracking, and longitudinal vital signs.
-- **💊 E-Prescribing & Pharmacy:** Doctor-to-Pharmacist prescription handoff workflow.
+- **💊 E-Prescribing & Pharmacy:** Doctor-to-Pharmacist prescription handoff workflow (Simulation).
 - **🔬 Laboratory & Radiology:** Order tracking, result uploads, and RIS/LIS mock integrations.
 - **🛡️ Audit Logging:** Immutable audit trails for all critical clinical actions (e.g., prescribing, diagnosing).
 
