@@ -44,6 +44,52 @@ The Django backend strictly adheres to the **Service Layer Pattern**:
 
 ---
 
+## 📊 System Diagrams
+
+<details>
+<summary><strong>1. Architecture & Deployment Diagrams</strong> (Click to expand)</summary>
+
+### System Architecture
+![Architecture Diagram](docs/images/archi.png)
+
+### Deployment Architecture
+![Deployment Diagram](docs/images/deployment.png)
+
+### Component Architecture
+![Component Diagram](docs/images/component.png)
+</details>
+
+<details>
+<summary><strong>2. Structural & Behavioral Diagrams</strong> (Click to expand)</summary>
+
+### System Use Cases
+![Use Case Diagram](docs/images/usecase.png)
+
+### Class Diagram
+![Class Diagram](docs/images/class.png)
+
+### Activity Workflow
+![Activity Diagram](docs/images/Activity.png)
+</details>
+
+<details>
+<summary><strong>3. Sequence Diagrams</strong> (Click to expand)</summary>
+
+### Complete Patient Journey
+![Complete Patient Journey](docs/images/Complete%20Patient%20Journey%20Sequence.png)
+
+### Patient Appointment Booking
+![Patient Appointment Sequence](docs/images/Patient%20Appointment%20Sequence%20Diagram.png)
+
+### Doctor Consultation Workflow
+![Doctor Consultation Sequence](docs/images/Doctor%20Consultation%20Sequence%20Diagram.png)
+
+### Laboratory Test Workflow
+![Lab Test Sequence](docs/images/Lab%20Test%20Sequence%20Diagram.png)
+</details>
+
+---
+
 ## 🚀 Features
 
 ### Core Clinical Modules
