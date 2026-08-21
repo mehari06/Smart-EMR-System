@@ -28,7 +28,7 @@ class Prescription(models.Model):
     ]
 
     encounter = models.ForeignKey(
-        'clinical.Encounter', on_delete=models.CASCADE,
+        'clinical.Encounter', on_delete=models.PROTECT,
         related_name='prescriptions')
     prescribed_by = models.ForeignKey('core.Staff', on_delete=models.PROTECT)
     status = models.CharField(

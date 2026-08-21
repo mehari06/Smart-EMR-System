@@ -34,10 +34,10 @@ class LabOrder(models.Model):
 
     encounter = models.ForeignKey(
         Encounter,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='lab_orders'
     )
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient, on_delete=models.PROTECT)
     ordered_by = models.ForeignKey(Staff, on_delete=models.PROTECT, related_name='lab_orders_ordered')
     test = models.ForeignKey(LabTest, on_delete=models.PROTECT)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default=STATUS_PENDING)

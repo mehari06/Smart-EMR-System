@@ -7,3 +7,20 @@ media/
 staticfiles/
 .vscode/
 .idea/
+
+# Test Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Test Reports
+*_test_report.html
+test_report.html
+test_results.txt
+locust_results/
+
+# Celery
+celerybeat-schedule
+
+# Debug Scripts
+_test_*.py

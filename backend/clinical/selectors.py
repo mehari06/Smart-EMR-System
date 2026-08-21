@@ -64,12 +64,13 @@ def get_encounter_by_id(encounter_id: int) -> Encounter:
 
 # ── Vitals & Diagnoses ──────────────────────────────────────────────────
 
-def get_encounter_vitals(encounter_id: int) -> VitalSign:
-    """Returns vital signs for a specific encounter, if any."""
-    from django.shortcuts import get_object_or_404
-    return get_object_or_404(
-        VitalSign.objects.select_related('recorded_by', 'recorded_by__user'),
-        encounter_id=encounter_id
+def get_encounter_vitals(encounter_id: int):
+    """Returns all vitals for an encounter (latest first)."""
+    return (
+        VitalSign.objects
+        .filter(encounter_id=encounter_id)
+        .select_related('recorded_by', 'recorded_by__user')
+        .order_by('-recorded_at')
     )
 
 

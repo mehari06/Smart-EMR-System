@@ -139,23 +139,15 @@ def reopen_encounter(*, encounter: Encounter, user=None) -> Encounter:
 # ── Vitals & Diagnoses ──────────────────────────────────────────────────
 
 def record_vitals(*, encounter: Encounter, data: dict, recorded_by, user=None) -> VitalSign:
-    """
-    Records or updates vital signs for a given encounter.
-    An encounter can only have one set of vitals recorded at a time (OneToOne).
-
-    IMPORTANT: 'data' must NOT contain the 'encounter' key — strip it before calling.
-    """
-    # Remove encounter from data dict to avoid duplicate kwarg error
     clean_data = {k: v for k, v in data.items() if k != 'encounter'}
 
-    if hasattr(encounter, 'vitalsign'):
-        # Update existing vitals
-        vitals = encounter.vitalsign
-        for field, value in clean_data.items():
-            setattr(vitals, field, value)
-        vitals.recorded_by = recorded_by
-        vitals.save()
-        return vitals
+    # Always create a new vitals record
+    vitals = VitalSign.objects.create(
+        encounter=encounter,
+        recorded_by=recorded_by,
+        **clean_data
+    )
+    return vitals
 
     # Create new vitals
     vitals = VitalSign.objects.create(

@@ -39,7 +39,7 @@ class Encounter(models.Model):
 
 
 class VitalSign(models.Model):
-    encounter = models.OneToOneField(Encounter, on_delete=models.CASCADE)
+    encounter = models.ForeignKey(Encounter, on_delete=models.PROTECT, related_name='vital_signs')
     temperature = models.DecimalField(max_digits=4, decimal_places=1)
     systolic_pressure = models.PositiveSmallIntegerField()
     diastolic_pressure = models.PositiveSmallIntegerField()
@@ -214,10 +214,10 @@ class RadiologyOrder(models.Model):
 
     encounter = models.ForeignKey(
         Encounter,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='radiology_orders'
     )
-    patient = models.ForeignKey('patients.Patient', on_delete=models.CASCADE)
+    patient = models.ForeignKey('patients.Patient', on_delete=models.PROTECT)
     test = models.ForeignKey(RadiologyTest, on_delete=models.PROTECT)
     ordered_by = models.ForeignKey('core.Staff', on_delete=models.PROTECT)
     status = models.CharField(

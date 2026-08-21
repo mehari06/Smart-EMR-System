@@ -14,10 +14,10 @@ class FileAttachment(models.Model):
 
     encounter = models.ForeignKey(
         Encounter,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='attachments'
     )
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient, on_delete=models.PROTECT)
     uploaded_by = models.ForeignKey(Staff, on_delete=models.PROTECT)
     file = models.FileField(upload_to='attachments/%Y/%m/%d/')
     file_type = models.CharField(max_length=20, choices=FILE_TYPES)

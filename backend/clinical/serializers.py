@@ -162,7 +162,7 @@ class EncounterDetailSerializer(serializers.ModelSerializer):
     radiology_orders = serializers.SerializerMethodField()
 
     # Nested relations
-    vitalsign = VitalSignSerializer(read_only=True)
+    vitalsign = serializers.SerializerMethodField()
     diagnoses = DiagnosisSerializer(many=True, read_only=True)
 
     # NEW: Prescriptions and Lab Orders
@@ -183,6 +183,12 @@ class EncounterDetailSerializer(serializers.ModelSerializer):
 
     def get_radiology_orders(self, obj):
         return RadiologyOrderSerializer(obj.radiology_orders.all(), many=True).data
+    def get_vitalsign(self, obj):
+        """Return latest vitals."""
+        latest = obj.vital_signs.order_by('-recorded_at').first()
+        if latest:
+            return VitalSignSerializer(latest).data
+        return None
 
     def get_prescriptions(self, obj):
         from prescriptions.serializers import PrescriptionSerializer

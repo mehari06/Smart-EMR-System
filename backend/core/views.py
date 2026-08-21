@@ -24,15 +24,18 @@ from .permissions import IsAdministrator
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.core.cache import cache
+from django_ratelimit.decorators import ratelimit
+from django.utils.decorators import method_decorator
 
 User = get_user_model()
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    """
-    Custom login view that uses the serializer which injects roles into the JWT.
-    """
     serializer_class = CustomTokenObtainPairSerializer
+    
+    @method_decorator(ratelimit(key='ip', rate='5/m', method='POST'))
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
 
 class CurrentUserView(APIView):
@@ -102,7 +105,7 @@ class PasswordResetRequestView(APIView):
     """Handle password reset request."""
     permission_classes = []
     authentication_classes = []
-    
+    @method_decorator(ratelimit(key='ip', rate='3/m', method='POST'))
     def post(self, request):
         email = request.data.get('email')
         

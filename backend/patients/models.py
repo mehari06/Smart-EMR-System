@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-import random
+import uuid
 
 
 class Patient(models.Model):
@@ -121,11 +121,11 @@ class PatientAllergy(models.Model):
         verbose_name_plural = 'Patient Allergies'
 
 
+
+
 @receiver(pre_save, sender=Patient)
 def auto_generate_patient_number(sender, instance, **kwargs):
     if not instance.patient_number:
-        while True:
-            new_number = f"PAT-{random.randint(100000, 999999)}"
-            if not Patient.objects.filter(patient_number=new_number).exists():
-                instance.patient_number = new_number
-                break
+        # Use UUID for collision-resistant unique number
+        unique_id = uuid.uuid4().hex[:8].upper()
+        instance.patient_number = f"PAT-{unique_id}"
