@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🏥 Smart EMR System</h1>
+  <h1>Smart EMR System</h1>
   <p><strong>A Next-Generation, Full-Stack Electronic Medical Record Platform</strong></p>
 
   [![Python](https://img.shields.io/badge/Python-3.13-blue.svg?logo=python&logoColor=white)](https://python.org)
@@ -12,7 +12,7 @@
 
 <br />
 
-## 📋 Overview
+## Overview
 
 **Smart EMR** is an enterprise-grade Electronic Medical Record system engineered to seamlessly digitize and optimize healthcare workflows. 
 
@@ -26,7 +26,7 @@ Built with a robust Django service-layer architecture and a highly responsive Ne
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 The system follows a strict decoupling of the client and server, communicating via a RESTful API secured by JWT.
 
@@ -44,7 +44,7 @@ The Django backend strictly adheres to the **Service Layer Pattern**:
 
 ---
 
-## 📊 System Diagrams
+## System Diagrams
 
 <details>
 <summary><strong>1. Architecture & Deployment Diagrams</strong> (Click to expand)</summary>
@@ -90,20 +90,20 @@ The Django backend strictly adheres to the **Service Layer Pattern**:
 
 ---
 
-## 🚀 Features
+## Features
 
 ### Core Clinical Modules
-- **🔐 Advanced Authentication:** JWT-based auth with HttpOnly cookie support and Zustand state persistence.
-- **👥 Patient Management:** Complete demographic tracking, allergies, and medical history.
-- **📅 Appointment & Queue Management:** Scheduling, Check-ins, and an ESI (Emergency Severity Index) based real-time priority queue.
-- **🩺 Clinical Encounters:** Comprehensive SOAP notes, ICD-10 Diagnosis tracking, and longitudinal vital signs.
-- **💊 E-Prescribing & Pharmacy:** Doctor-to-Pharmacist prescription handoff workflow (Simulation).
-- **🔬 Laboratory & Radiology:** Order tracking, result uploads, and RIS/LIS mock integrations.
-- **🛡️ Audit Logging:** Immutable audit trails for all critical clinical actions (e.g., prescribing, diagnosing).
+- **Advanced Authentication:** JWT-based auth with HttpOnly cookie support and Zustand state persistence.
+- **Patient Management:** Complete demographic tracking, allergies, and medical history.
+- **Appointment & Queue Management:** Scheduling, Check-ins, and an ESI (Emergency Severity Index) based real-time priority queue.
+- **Clinical Encounters:** Comprehensive SOAP notes, ICD-10 Diagnosis tracking, and longitudinal vital signs.
+- **E-Prescribing & Pharmacy:** Doctor-to-Pharmacist prescription handoff workflow (Simulation).
+- **Laboratory & Radiology:** Order tracking, result uploads, and RIS/LIS mock integrations.
+- **Audit Logging:** Immutable audit trails for all critical clinical actions (e.g., prescribing, diagnosing).
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -116,7 +116,7 @@ The Django backend strictly adheres to the **Service Layer Pattern**:
 
 ---
 
-## 💻 Local Development Setup
+## Local Development Setup
 
 ### Prerequisites
 - Node.js (v20+)
@@ -188,7 +188,7 @@ celery -A config worker --loglevel=info
 
 ---
 
-## 🧪 Testing
+## Testing
 
 The project maintains high coverage across both stacks.
 
@@ -212,7 +212,7 @@ npx playwright test
 
 ---
 
-## 👥 User Roles & Permissions
+## User Roles & Permissions
 
 The system defines 7 strict roles, managed via custom Django Permissions and Frontend route guards:
 
@@ -228,7 +228,7 @@ The system defines 7 strict roles, managed via custom Django Permissions and Fro
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 Smart-EMR-System/
@@ -256,7 +256,7 @@ Smart-EMR-System/
 
 ---
 
-## 🛡️ Security Posture
+## Security Posture
 
 - **No Mass Assignment:** Serializers strictly utilize `read_only_fields` to prevent privilege escalation.
 - **IDOR Protection:** `get_queryset` is strictly scoped at the ViewSet level. Doctors can only fetch data linked to their `staff_profile`.
@@ -264,8 +264,8 @@ Smart-EMR-System/
 
 ---
 
-## 📄 License
+## License
 This project is for educational and portfolio purposes.
 
-## 👤 Author
+## Author
 **Mehari** - 2026
