@@ -53,15 +53,16 @@ export default function LoginPage() {
     return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* LEFT PANEL - Image */}
-      {/* LEFT PANEL */}
+      
 <div className="hidden lg:block w-[45%] shrink-0 min-h-screen relative">
-  <Image
-    src={leftImage}
-    alt="Smart EMR"
-    fill
-    className="object-cover"
-    priority
-  />
+     <Image
+  src={leftImage}
+  alt="Smart EMR"
+  fill
+  sizes="25vw"
+  className="object-cover"
+  priority
+/>
 </div>
 
       {/* RIGHT PANEL - Login form */}

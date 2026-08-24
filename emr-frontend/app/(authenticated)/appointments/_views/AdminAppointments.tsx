@@ -118,6 +118,14 @@ export default function AdminAppointments() {
 
   const { data, isLoading } = useAppointments(params);
   const { data: todayAppts } = useTodayAppointments();
+
+  // Separate calendar query — fetches ALL appointments (no pagination/search filters)
+  // so the calendar always shows every appointment, not just the current page of 10.
+  const { data: calendarData } = useAppointments({
+    page_size: 500,
+    ordering: 'scheduled_at',
+  });
+
   const cancelMut = useCancelAppointment();
   const checkinMut = useCheckinAppointment();
 
@@ -135,15 +143,16 @@ export default function AdminAppointments() {
     completed: todayList.filter(a => a.status === 'C').length,
   };
 
-  // Calendar events
+  // Calendar events — use ALL appointments from the dedicated calendar query
+  const calendarAppointments = calendarData?.results ?? [];
   const calEvents: CalendarEvent[] = useMemo(() =>
-    appointments.map(a => ({
+    calendarAppointments.map(a => ({
       id: a.id,
       title: `${a.patient?.full_name ?? 'Patient'} → Dr. ${a.doctor?.full_name ?? 'Unassigned'}`,
       start: new Date(a.scheduled_at),
       end: addHours(new Date(a.scheduled_at), 1),
       resource: a,
-    })), [appointments]
+    })), [calendarAppointments]
   );
 
   // Table columns
@@ -452,6 +461,9 @@ export default function AdminAppointments() {
                 eventPropGetter={calEventStyleGetter as any}
                 style={{ height: '100%' }}
                 popup
+                draggableAccessor={null as any}
+                onEventDrop={undefined}
+                onEventResize={undefined}
               />
             )}
           </div>

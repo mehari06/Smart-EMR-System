@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
 
 import { useCreateAppointment } from '@/hooks/useAppointments';
-import { useQuery } from '@tanstack/react-query';
+// import { useQuery } from '@tanstack/react-query';
 import { PatientSearchSelect } from './PatientSearchSelect';
 
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // ── Schema ────────────────────────────────────────────────────────────────
 const schema = z.object({
@@ -37,6 +38,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export function CreateAppointmentModal() {
+  const queryClient = useQueryClient();
   const { data: deptData } = useQuery({
     queryKey: ['departments'],
     queryFn: () => coreApi.getDepartments(),
@@ -89,6 +91,7 @@ export function CreateAppointmentModal() {
     });
     reset();
     setOpen(false);
+    queryClient.invalidateQueries({ queryKey: ['appointments'] });
   };
 
   // Today formatted as YYYY-MM-DD for min date

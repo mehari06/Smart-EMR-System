@@ -381,21 +381,24 @@ export default function DoctorAppointments() {
             {isLoading ? (
               <div className="h-full bg-slate-50 rounded-lg animate-pulse" />
             ) : (
-              <BigCalendar
-                localizer={localizer}
-                events={calEvents}
-                startAccessor="start"
-                endAccessor="end"
-                view={calView}
-                onView={(newView) => setCalView(newView)}
-                eventPropGetter={eventStyleGetter as any}
-                onSelectEvent={(event: CalendarEvent) => {
-                  setSelectedEvent(event.resource);
-                  setEventDetailsOpen(true);
-                }}
-                style={{ height: '100%' }}
-                popup
-              />
+             <BigCalendar
+  localizer={localizer}
+  events={calEvents}
+  startAccessor="start"
+  endAccessor="end"
+  view={calView}
+  onView={(newView) => setCalView(newView)}
+  eventPropGetter={eventStyleGetter as any}
+  onSelectEvent={(event: CalendarEvent) => {
+    setSelectedEvent(event.resource);
+    setEventDetailsOpen(true);
+  }}
+  style={{ height: '100%' }}
+  popup
+  draggableAccessor={null as any}
+  onEventDrop={undefined}
+  onEventResize={undefined}
+/>
             )}
           </div>
         </div>

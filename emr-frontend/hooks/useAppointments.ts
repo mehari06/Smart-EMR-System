@@ -24,7 +24,7 @@ export function useAppointments(params?: Record<string, string | number | undefi
   return useQuery({
     queryKey: appointmentKeys.list(params ?? {}),
     queryFn: () => appointmentsApi.list(params),
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 30, // 30 seconds — fast enough to see new appointments quickly
     placeholderData: (prev) => prev,
   });
 }
