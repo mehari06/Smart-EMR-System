@@ -25,7 +25,9 @@ import {
 const schema = z.object({
   patient: z.number().min(1, 'Select a patient'),
   department: z.string().min(1, 'Select a department'),
-  triage_nurse: z.string().min(1, 'Assign a nurse'),
+
+  doctor: z.number().optional(),  // ADD THIS
+  triage_nurse: z.string().optional(), 
   date: z.string().min(1, 'Date is required'),
   time: z.string().min(1, 'Time is required'),
   reason: z.string().min(3, ' must be at least 3 characters'),
@@ -46,6 +48,7 @@ export function CreateAppointmentModal() {
     queryFn: () => coreApi.getStaff(),
   });
   const nurses = (staffData?.results ?? []).filter(s => s.user.role === 'nurse');
+  const doctors = (staffData?.results ?? []).filter(s => s.user.role === 'doctor');
   const [open, setOpen] = useState(false);
   const createMut = useCreateAppointment();
 
@@ -60,7 +63,9 @@ export function CreateAppointmentModal() {
     resolver: zodResolver(schema),
     defaultValues: {
       patient: 0,
+      
       department: '',
+       doctor: 0,
       triage_nurse: '',
       date: '',
       time: '',
@@ -76,7 +81,8 @@ export function CreateAppointmentModal() {
     await createMut.mutateAsync({
       patient: values.patient,
       department: Number(values.department),
-      triage_nurse: Number(values.triage_nurse),
+      ...(values.doctor ? { doctor: Number(values.doctor) } : {}),
+      ...(values.triage_nurse ? { triage_nurse: Number(values.triage_nurse) } : {}),
       scheduled_at,
       reason: values.reason,
       notes: values.notes ?? '',
@@ -124,6 +130,7 @@ export function CreateAppointmentModal() {
             </label>
             <select
               {...register('department')}
+              
               className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E90FF]"
             >
               <option value="">— Select Department —</option>
@@ -137,11 +144,32 @@ export function CreateAppointmentModal() {
               <p className="mt-1 text-xs text-red-500">{errors.department.message}</p>
             )}
           </div>
+                    {/* Doctor (Optional - for follow-up visits) */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Doctor <span className="text-slate-400">(Optional - for follow-up)</span>
+            </label>
+            <select
+              {...register('doctor', { valueAsNumber: true })}
+              required={false}
+
+              className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E90FF]"
+            
+            >
+              <option value="">— Select Doctor (if known) —</option>
+              {doctors.map((d: any) => (
+                <option key={d.id} value={d.id}>
+                  Dr. {d.user.first_name} {d.user.last_name}
+                  {d.specialization && ` (${d.specialization})`}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Triage Nurse */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Triage Nurse <span className="text-red-500">*</span>
+              (Optional if Doctor selected)<span className="text-red-500">*</span>
             </label>
             <select
               {...register('triage_nurse')}

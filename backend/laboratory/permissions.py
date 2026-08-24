@@ -3,6 +3,7 @@ from rest_framework import permissions
 FULL_LAB_READ_ROLES = frozenset(['admin', 'staff_head', 'nurse', 'lab_tech'])
 LAB_ORDER_CREATE_ROLES = frozenset(['admin', 'staff_head', 'doctor', 'nurse'])
 LAB_RESULT_ROLES = frozenset(['admin', 'staff_head', 'lab_tech'])
+LAB_VERIFY_ROLES = frozenset(['admin', 'doctor'])
 
 
 def can_view_lab_order(user, lab_order) -> bool:
@@ -39,18 +40,27 @@ class CanAccessLabOrder(permissions.BasePermission):
         if view.action == 'receive_results':
             return role in LAB_RESULT_ROLES and hasattr(request.user, 'staff_profile')
 
-        return role in ('admin', 'staff_head')
+        if view.action == 'verify':
+            return role in LAB_VERIFY_ROLES and hasattr(request.user, 'staff_profile')
+
+        return role in ('admin', 'staff_head', 'doctor')
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return can_view_lab_order(request.user, obj)
 
         role = getattr(request.user, 'role', '')
-        if request.user.is_superuser or role in ('admin', 'staff_head'):
+        if request.user.is_superuser or role in ('admin', 'staff_head','doctor'):
             return True
 
         if view.action == 'receive_results':
             return role == 'lab_tech'
+
+        if view.action == 'verify':
+            if role == 'doctor' and hasattr(request.user, 'staff_profile'):
+                return True
+            staff = getattr(request.user, 'staff_profile', None)
+            return bool(role == 'doctor' and staff and obj.encounter.doctor_id == staff.id)
 
         staff = getattr(request.user, 'staff_profile', None)
         return bool(role in ('doctor', 'nurse') and staff and obj.encounter.doctor_id == staff.id)

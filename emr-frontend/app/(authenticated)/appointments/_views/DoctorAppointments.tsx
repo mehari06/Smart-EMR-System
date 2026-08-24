@@ -20,7 +20,10 @@ import {
   CalendarDays, LayoutList, Clock, CheckCircle2, LogIn, UserCheck,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 
 const locales = { 'en-US': enUS };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
@@ -47,13 +50,31 @@ export default function DoctorAppointments() {
   const [selectedEvent, setSelectedEvent] = useState<AppointmentListItem | null>(null);
   const [eventDetailsOpen, setEventDetailsOpen] = useState(false);
   const [view, setView] = useState<'table' | 'calendar'>('table');
-  const [calView, setCalView] = useState<string>(Views.WEEK);
+  const [calView, setCalView] = useState<any>(Views.MONTH);
   const [page, setPage] = useState(1);
   const [sortColumn, setSortColumn] = useState('scheduled_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [dateFilter, setDateFilter] = useState('');
 
-    const staffProfileId = user?.staff_profile_id;
-  
+  const getDateFilterParam = () => {
+    if (dateFilter === 'today') {
+      return { scheduled_date: new Date().toISOString().slice(0, 10) };
+    }
+    if (dateFilter === '7days') {
+      const d = new Date();
+      d.setDate(d.getDate() - 7);
+      return { scheduled_after: d.toISOString().slice(0, 10) };
+    }
+    if (dateFilter === '30days') {
+      const d = new Date();
+      d.setDate(d.getDate() - 30);
+      return { scheduled_after: d.toISOString().slice(0, 10) };
+    }
+    return {};
+  };
+
+  const staffProfileId = user?.staff_profile_id;
+
   const handleSort = (column: string) => {
     if (sortColumn === column) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -63,11 +84,21 @@ export default function DoctorAppointments() {
     }
   };
 
+  // Table query - with filters
   const { data, isLoading } = useAppointments({
     page,
     page_size: 10,
     ordering: `${sortOrder === 'desc' ? '-' : ''}${sortColumn}`,
+    ...(staffProfileId ? { doctor: staffProfileId } : {}),
+    ...getDateFilterParam(),
   });
+
+  // Calendar query - ALL appointments without date filter
+  const { data: calendarData } = useAppointments({
+    page_size: 500,
+    ...(staffProfileId ? { doctor: staffProfileId } : {}),
+  });
+
   const checkinMut = useCheckinAppointment();
   const startEncounterMut = useStartEncounter();
 
@@ -83,32 +114,39 @@ export default function DoctorAppointments() {
     completed: appointments.filter(a => a.status === 'C').length,
   };
 
+  // Use ALL appointments from calendarData for calendar view
+  const calendarAppointments = calendarData?.results ?? [];
+
   const calEvents: CalendarEvent[] = useMemo(() =>
-    appointments.map(a => ({
+    calendarAppointments.map(a => ({
       id: a.id,
       title: `${a.patient?.full_name ?? 'Patient'} — ${a.reason}`,
       start: new Date(a.scheduled_at),
       end: addHours(new Date(a.scheduled_at), 1),
       resource: a,
-    })), [appointments]
+    })), [calendarAppointments]
   );
 
-    const eventStyleGetter = (event: CalendarEvent) => {
+  const eventStyleGetter = (event: CalendarEvent) => {
     const colors: Record<string, string> = {
       S: '#1E90FF', I: '#f59e0b', G: '#8b5cf6', C: '#22c55e', X: '#ef4444', N: '#94a3b8',
     };
+    const status = event.resource?.status ?? 'S';
     return {
       style: {
-        backgroundColor: colors[event.resource.status] ?? '#1E90FF',
-        borderRadius: '6px',
-        border: 'none',
+        backgroundColor: colors[status] ?? '#1E90FF',
+        borderRadius: '8px',
+        border: '2px solid white',
         color: 'white',
-        fontSize: '12px',
-        padding: '2px 6px',
+        fontSize: '11px',
+        fontWeight: 'bold',
+        padding: '4px 8px',
         cursor: 'pointer',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
       }
     };
   };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -150,9 +188,23 @@ export default function DoctorAppointments() {
 
       {view === 'table' ? (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          {/* Filter Bar */}
+          <div className="p-3 border-b border-slate-100">
+            <Select value={dateFilter} onValueChange={(v) => { setDateFilter(v); setPage(1); }}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Any Date" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Any Date</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="7days">Past 7 Days</SelectItem>
+                <SelectItem value="30days">This Month</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <table className="w-full">
             <thead>
-                            <tr className="border-b border-slate-100 bg-slate-50">
+              <tr className="border-b border-slate-100 bg-slate-50">
                 {[
                   { label: 'Patient', col: 'patient__user__first_name' },
                   { label: 'Scheduled', col: 'scheduled_at' },
@@ -160,12 +212,12 @@ export default function DoctorAppointments() {
                   { label: 'Status', col: 'status' },
                   { label: 'Action', col: '' },
                 ].map(h => (
-                  <th 
-                    key={h.label} 
+                  <th
+                    key={h.label}
                     className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide"
                   >
                     {h.col ? (
-                      <span 
+                      <span
                         className="cursor-pointer hover:text-slate-700"
                         onClick={() => handleSort(h.col)}
                       >
@@ -299,28 +351,43 @@ export default function DoctorAppointments() {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 flex items-center gap-3">
             <div className="flex rounded-lg border border-slate-200 overflow-hidden">
-              {[Views.DAY, Views.WEEK, Views.MONTH].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setCalView(v)}
-                  className={`px-4 py-1.5 text-sm font-medium capitalize transition-colors ${calView === v ? 'bg-[#1E90FF] text-white' : 'text-slate-600 hover:bg-slate-50'}`}
-                >
-                  {v}
-                </button>
-              ))}
+              <button
+                onClick={() => setCalView(Views.MONTH)}
+                className={`px-4 py-1.5 text-sm font-medium capitalize transition-colors ${calView === Views.MONTH ? 'bg-[#1E90FF] text-white' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                Month
+              </button>
+              <button
+                onClick={() => setCalView(Views.WEEK)}
+                className={`px-4 py-1.5 text-sm font-medium capitalize transition-colors ${calView === Views.WEEK ? 'bg-[#1E90FF] text-white' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                Week
+              </button>
+              <button
+                onClick={() => setCalView(Views.DAY)}
+                className={`px-4 py-1.5 text-sm font-medium capitalize transition-colors ${calView === Views.DAY ? 'bg-[#1E90FF] text-white' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                Day
+              </button>
+              <button
+                onClick={() => setCalView(Views.AGENDA)}
+                className={`px-4 py-1.5 text-sm font-medium capitalize transition-colors ${calView === Views.AGENDA ? 'bg-[#1E90FF] text-white' : 'text-slate-600 hover:bg-slate-50'}`}
+              >
+                Agenda
+              </button>
             </div>
           </div>
           <div className="p-4" style={{ height: 620 }}>
             {isLoading ? (
               <div className="h-full bg-slate-50 rounded-lg animate-pulse" />
             ) : (
-                            <BigCalendar
+              <BigCalendar
                 localizer={localizer}
                 events={calEvents}
                 startAccessor="start"
                 endAccessor="end"
-                view={calView as any}
-                onView={setCalView as any}
+                view={calView}
+                onView={(newView) => setCalView(newView)}
                 eventPropGetter={eventStyleGetter as any}
                 onSelectEvent={(event: CalendarEvent) => {
                   setSelectedEvent(event.resource);
@@ -333,7 +400,8 @@ export default function DoctorAppointments() {
           </div>
         </div>
       )}
-            {/* Event Details Dialog */}
+
+      {/* Event Details Dialog */}
       {selectedEvent && (
         <Dialog open={eventDetailsOpen} onOpenChange={setEventDetailsOpen}>
           <DialogContent className="w-full max-w-md">

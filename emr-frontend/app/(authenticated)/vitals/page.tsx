@@ -91,7 +91,7 @@ export default function VitalsPage() {
               <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-200">No active encounters</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-border bg-card">
+            <div className="overflow-x-auto rounded-lg border border-border bg-card">
               <Table>
                 <TableHeader className="bg-slate-50 dark:bg-slate-900">
                                     <TableRow>

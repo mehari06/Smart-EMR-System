@@ -474,7 +474,7 @@ export default function PatientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Patient Management</h1>
           <p className="text-sm text-slate-500 mt-1">{totalCount} patients registered</p>
@@ -491,7 +491,7 @@ export default function PatientsPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard icon={Users} label="Total Patients" value={totalCount} tone="teal" trend={{ value: 5, isPositive: true }} chartData={[{value: 10}, {value: 12}, {value: 15}, {value: 14}, {value: 18}, {value: 20}]} />
         <StatCard icon={UserCheck} label="Male Patients" value={maleCount} tone="blue" chartData={[{value: 5}, {value: 8}, {value: 6}, {value: 10}, {value: 12}, {value: 15}]} />
         <StatCard icon={Users} label="Female Patients" value={femaleCount} tone="rose" chartData={[{value: 8}, {value: 6}, {value: 10}, {value: 12}, {value: 14}, {value: 18}]} />
@@ -500,15 +500,15 @@ export default function PatientsPage() {
 
       <Card className="border-0 shadow-sm">
         <CardContent className="p-0">
-          <div className="flex items-center justify-between p-4 border-b">
-            <div className="relative w-72">
+          <div className="flex flex-wrap items-center gap-3 p-4 border-b">
+            <div className="relative flex-1 min-w-[180px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 id="patient-search"
                 placeholder="Search by name, ID, phone..."
                 value={globalFilter}
                 onChange={(e) => { setGlobalFilter(e.target.value); setPage(1); }}
-                className="pl-9"
+                className="pl-9 w-full"
               />
             </div>
             <DropdownMenu>

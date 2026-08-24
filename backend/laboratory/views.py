@@ -3,22 +3,28 @@ from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
 
 from audit.utils import log_action
 from .models import LabTest, LabOrder
 from .permissions import CanAccessLabOrder
 from .serializers import LabOrderCreateSerializer, LabOrderSerializer, LabTestSerializer
 from .services import create_lab_order, receive_lab_results
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 
 
 class LabTestViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = LabTest.objects.all()
     serializer_class = LabTestSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
-    @method_decorator(cache_page(86400))  # Cache 24 hours
+
+    @method_decorator(cache_page(86400))
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
@@ -55,7 +61,6 @@ class LabOrderViewSet(viewsets.ModelViewSet):
             return qs.filter(encounter__doctor=user.staff_profile)
 
         if role == 'patient' and hasattr(user, 'patient_profile'):
-            
             return qs.filter(
                 patient=user.patient_profile,
                 is_verified=True
@@ -127,35 +132,24 @@ class LabOrderViewSet(viewsets.ModelViewSet):
             LabOrderSerializer(updated, context={'request': request}).data,
             status=status.HTTP_200_OK,
         )
+
     @action(detail=True, methods=['POST'], url_path='verify')
     def verify_results(self, request, pk=None):
-        """Physician verifies results before they are visible to patients."""
+        """Physician verifies lab results."""
         lab_order = self.get_object()
-        
-        # Only doctors/admin can verify
+
         role = getattr(request.user, 'role', '')
         if role not in ['admin', 'doctor']:
             return Response(
-                {'detail': 'Only physicians can verify lab results.'},
+                {'detail': 'Only physicians can verify results.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
-        # Check if this doctor is assigned to the encounter
-        if role == 'doctor':
-            staff = getattr(request.user, 'staff_profile', None)
-            if staff and lab_order.encounter.doctor_id != staff.id:
-                return Response(
-                    {'detail': 'You can only verify results for your own patients.'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-        
+
         lab_order.verified_by = getattr(request.user, 'staff_profile', None)
         lab_order.verified_at = timezone.now()
         lab_order.is_verified = True
         lab_order.save(update_fields=['verified_by', 'verified_at', 'is_verified'])
-        
-        # Audit log
-        from audit.utils import log_action
+
         log_action(
             request.user,
             'VERIFY_LAB_RESULT',
@@ -165,8 +159,40 @@ class LabOrderViewSet(viewsets.ModelViewSet):
             f"Verified lab results for patient {lab_order.patient_id}.",
             request,
         )
-        
+
         return Response(
             LabOrderSerializer(lab_order, context={'request': request}).data,
             status=status.HTTP_200_OK
         )
+
+    @action(detail=True, methods=['GET'], url_path='download')
+    def download_result(self, request, pk=None):
+        """Download lab result as PDF."""
+        lab_order = self.get_object()
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        styles = getSampleStyleSheet()
+        elements = []
+
+        # Title
+        elements.append(Paragraph(f"Laboratory Report", styles['Title']))
+        elements.append(Spacer(1, 12))
+
+        # Test Info
+        elements.append(Paragraph(f"<b>Test:</b> {lab_order.test.name}", styles['Normal']))
+        elements.append(Paragraph(f"<b>Patient:</b> {lab_order.patient.user.get_full_name()}", styles['Normal']))
+        elements.append(Paragraph(f"<b>Ordered:</b> {lab_order.ordered_at.strftime('%Y-%m-%d')}", styles['Normal']))
+        elements.append(Spacer(1, 20))
+
+        # Result Text
+        if lab_order.result_text:
+            for line in lab_order.result_text.split('\n'):
+                elements.append(Paragraph(line, styles['Normal']))
+
+        doc.build(elements)
+        buffer.seek(0)
+
+        response = HttpResponse(buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="lab_result_{lab_order.id}.pdf"'
+        return response

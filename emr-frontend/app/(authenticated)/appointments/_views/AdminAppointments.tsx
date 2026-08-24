@@ -104,6 +104,7 @@ export default function AdminAppointments() {
     ...(search ? { search } : {}),
     ...(statusFilter ? { status: statusFilter } : {}),
     ordering: `${sortOrder === 'desc' ? '-' : ''}${sortColumn}`,
+        
   };
 
     const handleSort = (column: string) => {

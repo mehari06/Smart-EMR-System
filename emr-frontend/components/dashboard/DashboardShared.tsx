@@ -55,7 +55,7 @@ export function DashboardShell({
 }
 
 export function StatGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">{children}</div>;
+  return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">{children}</div>;
 }
 
 export function StatCard({
@@ -267,7 +267,7 @@ export function DashboardDataTable<TData>({
         </DropdownMenu>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border">
+      <div className="overflow-x-auto rounded-lg border border-border">
         <Table>
           <TableHeader className="bg-slate-50 dark:bg-slate-900">
             {table.getHeaderGroups().map((headerGroup) => (

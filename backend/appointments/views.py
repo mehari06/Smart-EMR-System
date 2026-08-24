@@ -23,8 +23,7 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from audit.utils import log_action
 from rest_framework.filters import SearchFilter, OrderingFilter
-
-from .models import Appointment
+from .filters import AppointmentFilter
 from .serializers import (
     AppointmentListSerializer,
     AppointmentDetailSerializer,
@@ -53,7 +52,7 @@ class AppointmentViewSet(viewsets.ModelViewSet):
     """
     permission_classes = [permissions.IsAuthenticated, CanAccessAppointment]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['patient', 'doctor', 'department', 'status']
+    filterset_class = AppointmentFilter
     search_fields = [
         'patient__user__first_name',
         'patient__user__last_name',

@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
+import { clinicalApi } from '@/lib/api/clinical';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Upload, FileText, X, Loader2 } from 'lucide-react';
@@ -23,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 const uploadSchema = z.object({
   file_type: z.enum(['lab_report', 'radiology_image', 'referral_letter', 'consent_form', 'other']),
   description: z.string().optional(),
+  encounter: z.number().optional(),
 });
 
 type UploadFormValues = z.infer<typeof uploadSchema>;
@@ -46,6 +49,14 @@ export function AttachmentUploadModal({ patientId, encounterId, trigger }: Attac
       description: '',
     },
   });
+    // Fetch encounters if patient provided and no encounter
+  const { data: encountersData } = useQuery({
+    queryKey: ['encounters', 'attachment', patientId],
+    queryFn: () => clinicalApi.listEncounters({ patient: patientId }),
+    enabled: !!patientId && !encounterId && open,
+  });
+
+  const encounters = encountersData?.results ?? [];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -63,7 +74,7 @@ export function AttachmentUploadModal({ patientId, encounterId, trigger }: Attac
         file_type: values.file_type,
         description: values.description,
         ...(patientId ? { patient: patientId } : {}),
-        ...(encounterId ? { encounter: encounterId } : {}),
+        ...(encounterId ? { encounter: encounterId } : values.encounter ? { encounter: values.encounter } : {}),
       },
       {
         onSuccess: () => {
@@ -176,6 +187,36 @@ export function AttachmentUploadModal({ patientId, encounterId, trigger }: Attac
                 </FormItem>
               )}
             />
+                        {/* Encounter Dropdown */}
+            {!encounterId && encounters.length > 0 && (
+              <FormField
+                control={form.control}
+                name="encounter"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Encounter <span className="text-red-500">*</span></FormLabel>
+                    <Select
+                      onValueChange={(v) => field.onChange(Number(v))}
+                      defaultValue={field.value ? String(field.value) : undefined}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select encounter" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {encounters.map((enc: any) => (
+                          <SelectItem key={enc.id} value={String(enc.id)}>
+                            {new Date(enc.started_at).toLocaleDateString()} - {enc.chief_complaint || 'Encounter'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Description */}
             <FormField

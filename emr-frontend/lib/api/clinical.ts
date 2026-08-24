@@ -136,6 +136,12 @@ export const clinicalApi = {
     }>>('/clinical/radiology/orders', { params });
     return response.data;
   },
+    downloadRadiologyResult: async (orderId: number) => {
+    const response = await apiClient.get(`/clinical/radiology/orders/${orderId}/download`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 
   createRadiologyOrder: async (data: {
     encounter: number; patient: number; test: number; ordered_by: number; clinical_notes: string;

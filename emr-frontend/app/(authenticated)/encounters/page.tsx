@@ -62,12 +62,12 @@ export default function EncountersPage() {
       </div>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-4">
+        <CardHeader className="flex flex-wrap items-start justify-between gap-3 pb-4">
           <div className="space-y-1">
             <CardTitle>Encounter Worklist</CardTitle>
             <CardDescription>Open an encounter to continue summary, vitals, diagnoses, SOAP, and discharge documentation.</CardDescription>
           </div>
-          <div className="w-48">
+          <div className="w-full sm:w-48">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by status..." />
@@ -94,7 +94,7 @@ export default function EncountersPage() {
               <p className="mt-1 text-sm text-slate-500">Start from a scheduled appointment to create a consultation.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-lg border border-border bg-card">
+            <div className="overflow-x-auto rounded-lg border border-border bg-card">
               <Table>
                 <TableHeader className="bg-slate-50 dark:bg-slate-900">
                                     <TableRow>

@@ -301,3 +301,36 @@ class RadiologyOrderViewSet(viewsets.ModelViewSet):
                 updated, context={'request': request}).data,
             status=status.HTTP_200_OK
         )
+    @action(detail=True, methods=['GET'], url_path='download')
+    def download_result(self, request, pk=None):
+        """Download radiology result as PDF."""
+        radiology_order = self.get_object()
+        
+        from django.http import HttpResponse
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet
+        from io import BytesIO
+        
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        styles = getSampleStyleSheet()
+        elements = []
+        
+        elements.append(Paragraph(f"Radiology Report", styles['Title']))
+        elements.append(Spacer(1, 12))
+        elements.append(Paragraph(f"<b>Test:</b> {radiology_order.test.name}", styles['Normal']))
+        elements.append(Paragraph(f"<b>Patient:</b> {radiology_order.patient.user.get_full_name()}", styles['Normal']))
+        elements.append(Paragraph(f"<b>Ordered:</b> {radiology_order.ordered_at.strftime('%Y-%m-%d')}", styles['Normal']))
+        elements.append(Spacer(1, 20))
+        
+        if radiology_order.result_text:
+            for line in radiology_order.result_text.split('\n'):
+                elements.append(Paragraph(line, styles['Normal']))
+        
+        doc.build(elements)
+        buffer.seek(0)
+        
+        response = HttpResponse(buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="radiology_result_{radiology_order.id}.pdf"'
+        return response

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'django_extensions',
+    'rest_framework_simplejwt.token_blacklist',
 
     # Local apps - Each has single responsibility (High Cohesion)
     'core',              # Common models: Organization, Department, Staff

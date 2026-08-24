@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api/client';
+import { useQuery, useQueryClient} from '@tanstack/react-query';
 import { 
   FlaskConical, 
   Download, 
@@ -34,6 +35,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.E
 
 export default function LabResultsPage() {
   const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [sortColumn, setSortColumn] = useState('ordered_at');
@@ -91,7 +93,7 @@ export default function LabResultsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-4 pt-4">
             <div className="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
@@ -291,25 +293,44 @@ export default function LabResultsPage() {
                         )}
                       </div>
                     </div>
-
                     {/* UNVERIFIED Message */}
                     {result.status === 'R' && !isVerified && (
                       <div className="border-t border-slate-100 bg-orange-50 p-4">
                         <div className="flex items-center gap-3">
                           <ShieldAlert className="h-5 w-5 text-orange-500 flex-shrink-0" />
-                          <div>
+                          <div className="flex-1">
                             <p className="text-sm font-semibold text-orange-700">
                               Results Received - Awaiting Physician Review
                             </p>
                             <p className="text-xs text-orange-500 mt-1">
-                              Your results have arrived but are pending review by your physician.
-                              You'll be able to view them once they've been verified.
+                              {user?.role === 'doctor' || user?.role === 'admin'
+                                ? 'Review the results and verify for patient access.'
+                                : 'Your results have arrived but are pending review by your physician.'}
                             </p>
                           </div>
+                          {(user?.role === 'doctor' || user?.role === 'admin') && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="gap-1.5 bg-green-600 hover:bg-green-700 flex-shrink-0"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                try {
+                                  await apiClient.post(`/laboratory/orders/${result.id}/verify`);
+                                  toast.success('Results verified successfully');
+                                  queryClient.invalidateQueries({ queryKey: ['lab-results'] });
+                                } catch {
+                                  toast.error('Failed to verify results');
+                                }
+                              }}
+                            >
+                              <ShieldCheck className="h-3.5 w-3.5" />
+                              Verify
+                            </Button>
+                          )}
                         </div>
                       </div>
                     )}
-
                     {/* VERIFIED - Show Result Content */}
                     {isExpanded && canViewResult && result.result_text && (
                       <div className="border-t border-slate-100 bg-slate-50 p-4">

@@ -101,8 +101,7 @@ export function AttachmentList({ patientId, encounterId, canUpload = true, canDe
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-slate-900 truncate">
-                        {attachment.file.split('/').pop()}
-                      </p>
+                        {attachment.file ? attachment.file.split('/').pop() : 'Attachment'}                    </p>
                       <Badge className={FILE_TYPE_COLORS[attachment.file_type]}>
                         {FILE_TYPE_LABELS[attachment.file_type]}
                       </Badge>

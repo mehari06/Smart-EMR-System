@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
 // Public routes that don't require authentication
-const publicRoutes = ['/login', '/register'];
+const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
 
 // Role-based route access map
 const roleRoutes: Record<string, string[]> = {
@@ -12,8 +12,8 @@ const roleRoutes: Record<string, string[]> = {
   receptionist: ['/dashboard', '/patients', '/appointments', '/profile','/queue'], // No clinical data
   pharmacist: ['/dashboard', '/prescriptions', '/profile','/queue'],
   lab_tech:   ['/dashboard', '/lab-orders', '/profile','/queue'],
-  patient:    ['/dashboard', '/appointments', '/history', '/profile','/queue', '/lab-results'],
-  staff_head: ['/dashboard', '/patients', '/appointments', '/encounters', '/prescriptions', '/lab-orders', '/settings', '/profile','/queue'],
+  patient:    ['/dashboard', '/appointments', '/history', '/profile','/queue', '/lab-results','/medications', '/radiology-results'],
+  staff_head: ['/dashboard', '/patients', '/appointments', '/encounters', '/prescriptions', '/lab-orders', '/settings', '/profile','/queue','/audit-logs'],
 };
 
 const SECRET = new TextEncoder().encode(

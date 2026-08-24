@@ -13,6 +13,7 @@ from .email_service import (
     get_medication_reminder_html,
     get_password_reset_html,
     get_schedule_digest_html,
+    get_account_invitation_html,
 )
 
 
