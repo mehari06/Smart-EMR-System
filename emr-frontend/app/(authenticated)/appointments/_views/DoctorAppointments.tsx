@@ -376,6 +376,14 @@ export default function DoctorAppointments() {
                 Agenda
               </button>
             </div>
+            <div className="flex items-center gap-2 ml-auto text-xs text-slate-500">
+              {Object.entries({ Scheduled: '#1E90FF', 'Checked In': '#f59e0b', Triaged: '#8b5cf6', Completed: '#22c55e', Cancelled: '#ef4444' }).map(([label, color]) => (
+                <div key={label} className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                  <span>{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="p-4" style={{ height: 620 }}>
             {isLoading ? (
