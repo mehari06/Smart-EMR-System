@@ -52,7 +52,7 @@ class CurrentUserView(APIView):
         if hasattr(user, 'staff_profile'):
             data['staff_details'] = StaffSerializer(user.staff_profile).data
         elif hasattr(user, 'patient_profile'):
-            # This would import PatientSerializer from patients app in real life
+            # This would import PatientSerializer from patients app in real
             data['is_patient'] = True
 
         return Response(data)

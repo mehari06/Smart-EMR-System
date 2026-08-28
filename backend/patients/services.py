@@ -57,7 +57,7 @@ def register_patient(*, user_data: dict[str, Any], patient_data: dict[str, Any])
     2. Generating a unique patient number.
     3. Creating the Patient profile linked to that user.
 
-    Wrapped in a transaction so if any step fails, nothing is saved.
+    Wrapped in a transaction so if any step fails, nothing is saved(Rollback).
     """
     # Check email uniqueness before creating
     if email_already_registered(email=user_data["email"]):

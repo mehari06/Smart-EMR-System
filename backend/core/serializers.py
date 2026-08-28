@@ -39,6 +39,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class UserSerializer(serializers.ModelSerializer):
     staff_profile_id = serializers.SerializerMethodField()
     staff_id = serializers.SerializerMethodField()
+    patient_profile_id = serializers.SerializerMethodField()
+    def get_patient_profile_id(self, obj):
+        patient_profile = getattr(obj, 'patient_profile', None)
+        return patient_profile.id if patient_profile else None
 
     def get_staff_profile_id(self, obj):
         staff_profile = getattr(obj, 'staff_profile', None)
@@ -50,7 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'phone', 'is_active', 'staff_profile_id', 'staff_id']
+        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'phone', 'is_active', 'staff_profile_id', 'staff_id','patient_profile_id']
         read_only_fields = ['id', 'role']
 
 

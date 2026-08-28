@@ -8,7 +8,7 @@ const publicRoutes = ['/login', '/register', '/forgot-password', '/reset-passwor
 // Role-based route access map
 const roleRoutes: Record<string, string[]> = {
   doctor:     ['/dashboard', '/patients', '/appointments', '/encounters', '/prescriptions', '/lab-orders', '/vitals', '/history', '/profile','/queue','/lab-results'],
-  nurse:      ['/dashboard', '/patients', '/appointments', '/encounters', '/vitals', '/history', '/profile', '/queue'],
+  nurse:      ['/dashboard', '/patients', '/appointments',  '/vitals', '/history', '/profile', '/queue'],
   receptionist: ['/dashboard', '/patients', '/appointments', '/profile','/queue'], // No clinical data
   pharmacist: ['/dashboard', '/prescriptions', '/profile','/queue'],
   lab_tech:   ['/dashboard', '/lab-orders', '/profile','/queue'],

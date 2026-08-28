@@ -237,7 +237,7 @@ function PatientModal({
 // ── Main Page ────────────────────────────────────────────────────────
 export default function PatientsPage() {
   const user = useAuthStore((state) => state.user);
-  const canAddEdit = user?.role === 'admin' || user?.role === 'staff_head';
+  const canAddEdit = user?.role === 'admin' || user?.role === 'staff_head'|| user?.role === 'receptionist';
 
   const qc = useQueryClient();
   const router = useRouter();

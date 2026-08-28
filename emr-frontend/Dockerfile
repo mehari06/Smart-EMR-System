@@ -10,4 +10,5 @@ COPY . .
 
 EXPOSE 3000
 
+# For development
 CMD ["npm", "run", "dev"]

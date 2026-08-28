@@ -23,7 +23,7 @@ load_dotenv(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-only-key')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-only-key')
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Third-party apps
-    'debug_toolbar',
+    # 'debug_toolbar',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -61,22 +61,27 @@ INSTALLED_APPS = [
     'attachments',
     'queue_management',
 ]
+# if DEBUG:
+#     INSTALLED_APPS += ['debug_toolbar']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-INTERNAL_IPS = [
-    '127.0.0.1',
-    'localhost',
-]
+# if DEBUG:
+#     MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+# INTERNAL_IPS = [
+#     '127.0.0.1',
+#     'localhost',
+#     '172.18.0.1',
+# ]
 
 # DRF routers are all registered with trailing_slash=False.
 # Without this, Django's CommonMiddleware will attempt a 301 redirect on
@@ -257,7 +262,7 @@ CELERY_TIMEZONE = 'UTC'
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://localhost:6379/1',  # Database 1 for cache
+        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),  # Parameterized for Docker
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',

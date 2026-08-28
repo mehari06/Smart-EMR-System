@@ -8,7 +8,7 @@ from rest_framework import permissions
 
 
 PATIENT_STAFF_ROLES = ('admin', 'staff_head', 'doctor', 'nurse', 'receptionist')
-PATIENT_CREATE_ROLES = ('admin', 'staff_head', 'doctor', 'nurse', 'receptionist')
+PATIENT_CREATE_ROLES = ('admin', 'staff_head', 'receptionist')
 
 
 class CanCreatePatient(permissions.BasePermission):

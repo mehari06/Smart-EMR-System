@@ -83,7 +83,7 @@ function AppointmentActions({ appointment }: { appointment: AppointmentListItem 
 
 export default function PatientDashboard() {
   const user = useAuthStore((state) => state.user);
-  const patientId = user?.id;
+  const patientId = user?.patient_profile_id ?? user?.id;
   const enabled = !!patientId;
 
   const appointments = useDashboardAppointments({ patient: patientId ?? 0, page_size: 20 }, enabled);

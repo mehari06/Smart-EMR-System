@@ -10,6 +10,8 @@ interface User {
   role: 'admin' | 'doctor' | 'nurse' | 'patient' | 'pharmacist' | 'lab_tech' | 'receptionist' | 'staff_head';
   staff_profile_id?: number | null;
   staff_id?: string | null;
+  patient_profile_id?: number | null;
+
 }
 
 export function getInitials(user: User | null): string {
